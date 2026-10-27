@@ -14,7 +14,7 @@ def test_each_digest_scanned_once_then_cached(tmp_path, monkeypatch, inventory):
     def fake_trivy(ref, trivy_bin="trivy"):
         calls.append(ref)
         digest = ref.split("@", 1)[1]
-        return json.loads((FIXTURES / "trivy" / f"{digest}.json").read_text())
+        return json.loads(scanner.cache_path(FIXTURES, digest).read_text())
 
     monkeypatch.setattr(scanner, "run_trivy", fake_trivy)
     _, first = scanner.scan_workloads(inventory, tmp_path)

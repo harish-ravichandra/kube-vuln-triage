@@ -60,7 +60,8 @@ def parse_trivy(digest: str, ref: str, report: dict[str, Any]) -> ImageScan:
 
 
 def cache_path(cache_dir: Path, digest: str) -> Path:
-    return cache_dir / "trivy" / f"{digest}.json"
+    # sha256-<hex>.json: colons are invalid in Windows paths and artifact names.
+    return cache_dir / "trivy" / f"{digest.replace(':', '-')}.json"
 
 
 def scan_workloads(

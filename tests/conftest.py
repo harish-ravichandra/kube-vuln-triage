@@ -10,7 +10,7 @@ import pytest
 
 from cva.inventory import build_inventory
 from cva.models import Finding, ImageScan, Vuln, Workload
-from cva.scanner import parse_trivy
+from cva.scanner import cache_path, parse_trivy
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -47,7 +47,7 @@ def inventory() -> list[Workload]:
 
 
 def load_scan(digest: str) -> ImageScan:
-    report = json.loads((FIXTURES / "trivy" / f"{digest}.json").read_text())
+    report = json.loads(cache_path(FIXTURES, digest).read_text())
     return parse_trivy(digest, report.get("ArtifactName", ""), report)
 
 
