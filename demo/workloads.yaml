@@ -1,0 +1,100 @@
+# Four sample workloads. Every image is pinned by tag and digest.
+# payments-api and orders-worker share a Debian 12 base so base image CVEs
+# collapse into shared fix items.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-api
+  namespace: demo
+  labels: {app: payments-api, team: payments}
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: payments-api}
+  template:
+    metadata:
+      labels: {app: payments-api, team: payments}
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.25.3@sha256:c7a6ad68be85142c7fe1089e48faa1e7c7166a194caa9180ddea66345876b9d2
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-api
+  namespace: demo
+spec:
+  type: NodePort
+  selector: {app: payments-api}
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-worker
+  namespace: demo
+  labels: {app: orders-worker, team: orders}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: orders-worker}
+  template:
+    metadata:
+      labels: {app: orders-worker, team: orders}
+    spec:
+      containers:
+        - name: worker
+          image: python:3.12.13-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2
+          command: ["sleep", "infinity"]
+---
+# No team label and no owner annotation: this is the orphan.
+# node 14 on Debian 10 (buster) is end-of-life.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legacy-report
+  namespace: demo
+  labels: {app: legacy-report}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: legacy-report}
+  template:
+    metadata:
+      labels: {app: legacy-report}
+    spec:
+      containers:
+        - name: report
+          image: node:14.21.3-buster-slim@sha256:198142146b4c47193348f6415da769bdb5035c16fcab051c38c256a6b48f2e1c
+          command: ["node", "-e", "setInterval(() => {}, 1 << 30)"]
+---
+# Distroless static, debug-nonroot variant: same package set as :nonroot plus a
+# busybox binary, so the container has something to run.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clean-app
+  namespace: demo
+  labels: {app: clean-app, team: platform}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: clean-app}
+  template:
+    metadata:
+      labels: {app: clean-app, team: platform}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: app
+          image: gcr.io/distroless/static-debian12:debug-nonroot@sha256:d5563cc7f2f44313f332e91138cc8c6a158899afeeeab2fce3b0f9ccdb3cf9ee
+          command: ["/busybox/sleep", "infinity"]
+          securityContext:
+            allowPrivilegeEscalation: false
