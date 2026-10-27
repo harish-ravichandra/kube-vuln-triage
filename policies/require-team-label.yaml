@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-team-label
+  annotations:
+    policies.kyverno.io/title: Require team label
+    policies.kyverno.io/description: >-
+      Every pod must carry a non-empty `team` label so vulnerability findings
+      can be routed to an owner. Unlabelled workloads become orphans.
+spec:
+  background: true
+  rules:
+    - name: check-team-label
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, kyverno]
+      validate:
+        failureAction: Audit
+        failureActionOverrides:
+          - action: Enforce
+            namespaces: [secure]
+        message: >-
+          Pod must have a non-empty `team` label (e.g. team: payments) so its
+          vulnerabilities can be attributed to an owning team.
+        pattern:
+          metadata:
+            labels:
+              team: "?*"

@@ -1,0 +1,55 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+  annotations:
+    policies.kyverno.io/title: Disallow latest tag
+    policies.kyverno.io/description: >-
+      Images must be pinned to an explicit tag (and ideally a digest). An
+      untagged or `:latest` image can change underneath a running workload,
+      so its scan results stop describing what actually runs.
+spec:
+  background: true
+  rules:
+    - name: require-image-tag
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, kyverno]
+      validate:
+        failureAction: Audit
+        failureActionOverrides:
+          - action: Enforce
+            namespaces: [secure]
+        message: "Image must specify an explicit tag or digest; untagged images resolve to :latest."
+        pattern:
+          spec:
+            containers:
+              - image: "*:*"
+            =(initContainers):
+              - image: "*:*"
+    - name: validate-image-tag
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, kyverno]
+      validate:
+        failureAction: Audit
+        failureActionOverrides:
+          - action: Enforce
+            namespaces: [secure]
+        message: "Image tag :latest is not allowed; pin a version (and digest)."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"
+            =(initContainers):
+              - image: "!*:latest"

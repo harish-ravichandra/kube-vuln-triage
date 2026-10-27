@@ -1,0 +1,71 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-non-root
+  annotations:
+    policies.kyverno.io/title: Require non-root
+    policies.kyverno.io/description: >-
+      Containers must run as non-root (`runAsNonRoot: true` at pod or container
+      level) and set `allowPrivilegeEscalation: false`.
+spec:
+  background: true
+  rules:
+    - name: run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, kyverno]
+      validate:
+        failureAction: Audit
+        failureActionOverrides:
+          - action: Enforce
+            namespaces: [secure]
+        message: >-
+          Containers must run as non-root: set securityContext.runAsNonRoot: true
+          on the pod, or on every container.
+        anyPattern:
+          # Pod-level runAsNonRoot, and no container overrides it to false.
+          - spec:
+              securityContext:
+                runAsNonRoot: true
+              containers:
+                - =(securityContext):
+                    =(runAsNonRoot): true
+              =(initContainers):
+                - =(securityContext):
+                    =(runAsNonRoot): true
+          # Or every container sets it explicitly.
+          - spec:
+              containers:
+                - securityContext:
+                    runAsNonRoot: true
+              =(initContainers):
+                - securityContext:
+                    runAsNonRoot: true
+    - name: disallow-privilege-escalation
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system, kyverno]
+      validate:
+        failureAction: Audit
+        failureActionOverrides:
+          - action: Enforce
+            namespaces: [secure]
+        message: "Every container must set securityContext.allowPrivilegeEscalation: false."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: false
+            =(initContainers):
+              - securityContext:
+                  allowPrivilegeEscalation: false
