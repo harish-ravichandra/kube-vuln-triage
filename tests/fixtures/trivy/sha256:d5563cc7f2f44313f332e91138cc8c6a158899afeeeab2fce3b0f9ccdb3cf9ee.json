@@ -1,0 +1,44 @@
+{
+ "SchemaVersion": 2,
+ "ArtifactName": "gcr.io/distroless/static-debian12:debug-nonroot",
+ "ArtifactType": "container_image",
+ "Metadata": {
+  "OS": {
+   "Family": "debian",
+   "Name": "12.15"
+  }
+ },
+ "Results": [
+  {
+   "Target": "gcr.io/distroless/static-debian12:debug-nonroot (debian 12.15)",
+   "Class": "os-pkgs",
+   "Type": "debian",
+   "Vulnerabilities": [
+    {
+     "VulnerabilityID": "DLA-4845-1",
+     "PkgName": "ca-certificates",
+     "InstalledVersion": "20250419~deb12u1",
+     "FixedVersion": "20250419~deb12u2",
+     "Severity": "UNKNOWN",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "DLA-4792-1",
+     "PkgName": "tzdata",
+     "InstalledVersion": "2026b-0+deb12u1",
+     "FixedVersion": "2026c-0+deb12u1",
+     "Severity": "UNKNOWN",
+     "Status": "fixed"
+    },
+    {
+     "VulnerabilityID": "DLA-4854-1",
+     "PkgName": "tzdata",
+     "InstalledVersion": "2026b-0+deb12u1",
+     "FixedVersion": "2026e-0+deb12u1",
+     "Severity": "UNKNOWN",
+     "Status": "fixed"
+    }
+   ]
+  }
+ ]
+}
