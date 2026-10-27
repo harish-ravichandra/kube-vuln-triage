@@ -1,0 +1,93 @@
+name: e2e-demo
+
+# Full demo on a fresh kind cluster: Kyverno admission proof, the four sample
+# workloads, two cva runs (second fully cached), reports and real fixtures
+# uploaded as artifacts.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KIND_VERSION: v0.33.0
+  KIND_SHA256: aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d
+  KUBECTL_VERSION: v1.36.4
+  KUBECTL_SHA256: 8b8f088da2dab964f853b38464033b1be15ede2839eca751482357c45abdd05a
+  HELM_VERSION: v3.22.0
+  HELM_SHA256: 1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb
+  # Released after the March 2026 compromise (GHSA-69fq-xp46-6x23).
+  TRIVY_VERSION: 0.75.0
+  TRIVY_SHA256: c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f
+
+jobs:
+  demo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.14"
+
+      - name: Install pinned tools (checksums verified)
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/bin" && cd "$RUNNER_TEMP"
+          curl -sSfLo kind "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-linux-amd64"
+          echo "${KIND_SHA256}  kind" | sha256sum -c -
+          curl -sSfLo kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c -
+          curl -sSfLO "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz"
+          echo "${HELM_SHA256}  helm-${HELM_VERSION}-linux-amd64.tar.gz" | sha256sum -c -
+          tar xzf "helm-${HELM_VERSION}-linux-amd64.tar.gz" linux-amd64/helm
+          curl -sSfLO "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" | sha256sum -c -
+          tar xzf "trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" trivy
+          install -m 0755 kind kubectl linux-amd64/helm trivy "$HOME/bin/"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Tool versions
+        run: kind version && kubectl version --client && helm version --short && trivy --version
+
+      - name: Run demo
+        run: bash demo/run-demo.sh
+
+      - name: Capture fixtures from this cluster
+        run: python scripts/capture_fixtures.py
+
+      - name: Install test dependencies (hash-pinned)
+        run: python -m pip install --require-hashes -r requirements-dev.txt
+
+      - name: Tests against freshly captured fixtures
+        run: python -m pytest -q
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Admission proof"; echo '```'; cat reports/admission.txt 2>/dev/null; echo '```'
+            echo "## Scan runs"; echo '```'; grep -hE "^(inventory|scan|findings):" reports/run1.log reports/run2.log 2>/dev/null; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cva-reports
+          path: reports/
+          if-no-files-found: warn
+
+      - name: Upload captured fixtures
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cva-fixtures
+          path: tests/fixtures/
+          if-no-files-found: warn
