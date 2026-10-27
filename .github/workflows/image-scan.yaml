@@ -1,0 +1,45 @@
+name: image-scan
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build sample image
+        run: docker build -t sample-app:${{ github.sha }} sample-app/
+
+      # trivy-action v0.36.0 pins setup-trivy to 3fb12ec (v0.2.6), the commit the
+      # GHSA-69fq-xp46-6x23 advisory lists as known-safe. The binary is pinned
+      # separately to a release published after the March 2026 compromise.
+      - name: Trivy scan (gate on fixable CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: image
+          image-ref: sample-app:${{ github.sha }}
+          scanners: vuln
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL
+          ignore-unfixed: true
+          limit-severities-for-sarif: true
+          exit-code: "1"
+
+      - name: Upload SARIF to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-sample-app
