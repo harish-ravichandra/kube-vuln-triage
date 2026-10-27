@@ -1,0 +1,469 @@
+{
+ "apiVersion": "v1",
+ "items": [
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "creationTimestamp": "2026-10-27T18:06:57Z",
+    "labels": {
+     "component": "apiserver",
+     "provider": "kubernetes"
+    },
+    "name": "kubernetes",
+    "namespace": "default",
+    "resourceVersion": "242",
+    "uid": "05c9855f-f13d-4b08-90ff-60206a7b7aa9"
+   },
+   "spec": {
+    "clusterIP": "10.96.0.1",
+    "clusterIPs": [
+     "10.96.0.1"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "name": "https",
+      "port": 443,
+      "protocol": "TCP",
+      "targetPort": 6443
+     }
+    ],
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"annotations\":{},\"name\":\"payments-api\",\"namespace\":\"demo\"},\"spec\":{\"ports\":[{\"nodePort\":30080,\"port\":80,\"targetPort\":80}],\"selector\":{\"app\":\"payments-api\"},\"type\":\"NodePort\"}}\n"
+    },
+    "creationTimestamp": "2026-10-27T18:07:46Z",
+    "name": "payments-api",
+    "namespace": "demo",
+    "resourceVersion": "932",
+    "uid": "828dd90b-c8d0-42b8-8ecc-898c30ef3245"
+   },
+   "spec": {
+    "clusterIP": "10.96.233.28",
+    "clusterIPs": [
+     "10.96.233.28"
+    ],
+    "externalTrafficPolicy": "Cluster",
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "nodePort": 30080,
+      "port": 80,
+      "protocol": "TCP",
+      "targetPort": 80
+     }
+    ],
+    "selector": {
+     "app": "payments-api"
+    },
+    "sessionAffinity": "None",
+    "type": "NodePort"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "prometheus.io/port": "9153",
+     "prometheus.io/scrape": "true"
+    },
+    "creationTimestamp": "2026-10-27T18:06:59Z",
+    "labels": {
+     "k8s-app": "kube-dns",
+     "kubernetes.io/cluster-service": "true",
+     "kubernetes.io/name": "CoreDNS"
+    },
+    "name": "kube-dns",
+    "namespace": "kube-system",
+    "resourceVersion": "281",
+    "uid": "82014f84-0652-4192-9055-17ef3e8bc02b"
+   },
+   "spec": {
+    "clusterIP": "10.96.0.10",
+    "clusterIPs": [
+     "10.96.0.10"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "name": "dns",
+      "port": 53,
+      "protocol": "UDP",
+      "targetPort": 53
+     },
+     {
+      "name": "dns-tcp",
+      "port": 53,
+      "protocol": "TCP",
+      "targetPort": 53
+     },
+     {
+      "name": "metrics",
+      "port": 9153,
+      "protocol": "TCP",
+      "targetPort": 9153
+     }
+    ],
+    "selector": {
+     "k8s-app": "kube-dns"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "meta.helm.sh/release-name": "kyverno",
+     "meta.helm.sh/release-namespace": "kyverno"
+    },
+    "creationTimestamp": "2026-10-27T18:07:19Z",
+    "labels": {
+     "app.kubernetes.io/component": "background-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/managed-by": "Helm",
+     "app.kubernetes.io/name": "kyverno-background-controller",
+     "app.kubernetes.io/part-of": "kyverno",
+     "app.kubernetes.io/version": "3.9.1",
+     "helm.sh/chart": "kyverno-3.9.1"
+    },
+    "name": "kyverno-background-controller-metrics",
+    "namespace": "kyverno",
+    "resourceVersion": "632",
+    "uid": "4dd28064-5410-476e-a7f9-05e46871224a"
+   },
+   "spec": {
+    "clusterIP": "10.96.254.92",
+    "clusterIPs": [
+     "10.96.254.92"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "name": "metrics-port",
+      "port": 8000,
+      "protocol": "TCP",
+      "targetPort": 8000
+     }
+    ],
+    "selector": {
+     "app.kubernetes.io/component": "background-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/part-of": "kyverno"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "meta.helm.sh/release-name": "kyverno",
+     "meta.helm.sh/release-namespace": "kyverno"
+    },
+    "creationTimestamp": "2026-10-27T18:07:19Z",
+    "labels": {
+     "app.kubernetes.io/component": "cleanup-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/managed-by": "Helm",
+     "app.kubernetes.io/name": "kyverno-cleanup-controller",
+     "app.kubernetes.io/part-of": "kyverno",
+     "app.kubernetes.io/version": "3.9.1",
+     "helm.sh/chart": "kyverno-3.9.1"
+    },
+    "name": "kyverno-cleanup-controller",
+    "namespace": "kyverno",
+    "resourceVersion": "640",
+    "uid": "21200324-1089-4ef2-8468-65f19e6a63f7"
+   },
+   "spec": {
+    "clusterIP": "10.96.183.92",
+    "clusterIPs": [
+     "10.96.183.92"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "appProtocol": "https",
+      "name": "https",
+      "port": 443,
+      "protocol": "TCP",
+      "targetPort": "https"
+     }
+    ],
+    "selector": {
+     "app.kubernetes.io/component": "cleanup-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/part-of": "kyverno"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "meta.helm.sh/release-name": "kyverno",
+     "meta.helm.sh/release-namespace": "kyverno"
+    },
+    "creationTimestamp": "2026-10-27T18:07:19Z",
+    "labels": {
+     "app.kubernetes.io/component": "cleanup-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/managed-by": "Helm",
+     "app.kubernetes.io/name": "kyverno-cleanup-controller",
+     "app.kubernetes.io/part-of": "kyverno",
+     "app.kubernetes.io/version": "3.9.1",
+     "helm.sh/chart": "kyverno-3.9.1"
+    },
+    "name": "kyverno-cleanup-controller-metrics",
+    "namespace": "kyverno",
+    "resourceVersion": "638",
+    "uid": "6d434cdd-2db7-4042-b58a-9b99cb8b59bb"
+   },
+   "spec": {
+    "clusterIP": "10.96.49.120",
+    "clusterIPs": [
+     "10.96.49.120"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "name": "metrics-port",
+      "port": 8000,
+      "protocol": "TCP",
+      "targetPort": 8000
+     }
+    ],
+    "selector": {
+     "app.kubernetes.io/component": "cleanup-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/part-of": "kyverno"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "meta.helm.sh/release-name": "kyverno",
+     "meta.helm.sh/release-namespace": "kyverno"
+    },
+    "creationTimestamp": "2026-10-27T18:07:19Z",
+    "labels": {
+     "app.kubernetes.io/component": "reports-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/managed-by": "Helm",
+     "app.kubernetes.io/name": "kyverno-reports-controller",
+     "app.kubernetes.io/part-of": "kyverno",
+     "app.kubernetes.io/version": "3.9.1",
+     "helm.sh/chart": "kyverno-3.9.1"
+    },
+    "name": "kyverno-reports-controller-metrics",
+    "namespace": "kyverno",
+    "resourceVersion": "621",
+    "uid": "fac306ea-dddf-47fe-b461-3589a7d29525"
+   },
+   "spec": {
+    "clusterIP": "10.96.5.145",
+    "clusterIPs": [
+     "10.96.5.145"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "name": "metrics-port",
+      "port": 8000,
+      "protocol": "TCP",
+      "targetPort": 8000
+     }
+    ],
+    "selector": {
+     "app.kubernetes.io/component": "reports-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/part-of": "kyverno"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "meta.helm.sh/release-name": "kyverno",
+     "meta.helm.sh/release-namespace": "kyverno"
+    },
+    "creationTimestamp": "2026-10-27T18:07:19Z",
+    "labels": {
+     "app.kubernetes.io/component": "admission-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/managed-by": "Helm",
+     "app.kubernetes.io/name": "kyverno-admission-controller",
+     "app.kubernetes.io/part-of": "kyverno",
+     "app.kubernetes.io/version": "3.9.1",
+     "helm.sh/chart": "kyverno-3.9.1"
+    },
+    "name": "kyverno-svc",
+    "namespace": "kyverno",
+    "resourceVersion": "625",
+    "uid": "5296aa96-209b-4fb5-a6e7-95a9fd7ac383"
+   },
+   "spec": {
+    "clusterIP": "10.96.43.122",
+    "clusterIPs": [
+     "10.96.43.122"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "appProtocol": "https",
+      "name": "https",
+      "port": 443,
+      "protocol": "TCP",
+      "targetPort": "https"
+     }
+    ],
+    "selector": {
+     "app.kubernetes.io/component": "admission-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/part-of": "kyverno"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  },
+  {
+   "apiVersion": "v1",
+   "kind": "Service",
+   "metadata": {
+    "annotations": {
+     "meta.helm.sh/release-name": "kyverno",
+     "meta.helm.sh/release-namespace": "kyverno"
+    },
+    "creationTimestamp": "2026-10-27T18:07:19Z",
+    "labels": {
+     "app.kubernetes.io/component": "admission-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/managed-by": "Helm",
+     "app.kubernetes.io/name": "kyverno-admission-controller",
+     "app.kubernetes.io/part-of": "kyverno",
+     "app.kubernetes.io/version": "3.9.1",
+     "helm.sh/chart": "kyverno-3.9.1"
+    },
+    "name": "kyverno-svc-metrics",
+    "namespace": "kyverno",
+    "resourceVersion": "629",
+    "uid": "e17089fc-53ea-415a-9c76-e41e89bdaa85"
+   },
+   "spec": {
+    "clusterIP": "10.96.221.101",
+    "clusterIPs": [
+     "10.96.221.101"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+     "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+     {
+      "name": "metrics-port",
+      "port": 8000,
+      "protocol": "TCP",
+      "targetPort": 8000
+     }
+    ],
+    "selector": {
+     "app.kubernetes.io/component": "admission-controller",
+     "app.kubernetes.io/instance": "kyverno",
+     "app.kubernetes.io/part-of": "kyverno"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+   },
+   "status": {
+    "loadBalancer": {}
+   }
+  }
+ ],
+ "kind": "List",
+ "metadata": {
+  "resourceVersion": ""
+ }
+}
