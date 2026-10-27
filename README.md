@@ -1,4 +1,4 @@
-# Container Vulnerability Attribution Pipeline
+# kube-vuln-triage
 
 Image scanners produce thousands of findings, and most of them never get fixed. Two reasons dominate: a finding with no owner reaches nobody, and the same base image CVE shows up once per application, so ten teams each get a ticket for a problem only a rebuild of one base image can fix. This project inventories running Kubernetes workloads, scans each unique image digest once with Trivy, attributes every finding to an owning team from namespace and pod metadata (flagging the rest as orphans), ranks findings on CISA KEV, EPSS, fix availability and exposure, and collapses base image CVEs into one fix item each. Shift-left controls sit alongside: Kyverno admission policies and a GitHub Actions gate on fixable critical CVEs with SARIF upload.
 

@@ -14,7 +14,7 @@ KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulner
 EPSS_URL = "https://api.first.org/data/v1/epss"
 MAX_AGE_SECONDS = 24 * 3600
 EPSS_BATCH = 100
-USER_AGENT = "cva/0.1 (+container-vuln-attribution)"
+USER_AGENT = "cva/0.1 (+kube-vuln-triage)"
 
 
 @dataclass

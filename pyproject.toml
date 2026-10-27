@@ -1,5 +1,5 @@
 [project]
-name = "container-vuln-attribution"
+name = "kube-vuln-triage"
 version = "0.1.0"
 description = "Inventory Kubernetes images, scan each digest once with Trivy, attribute findings to owners and rank them."
 requires-python = ">=3.11"
