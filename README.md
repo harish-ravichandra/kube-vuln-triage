@@ -36,7 +36,7 @@ python3 -m cva run --out reports/              # scans each unique digest
 python3 -m cva run --out reports/              # second run: every digest from cache
 ```
 
-`bash demo/run-demo.sh` does all of the above with readiness waits and assertions; the [`e2e-demo`](.github/workflows/e2e-demo.yaml) workflow runs it on a fresh kind cluster on every push and uploads the reports.
+`bash demo/run-demo.sh` does all of the above with readiness waits and assertions; the [`e2e-demo`](.github/workflows/e2e-demo.yaml) workflow runs it on a fresh kind cluster on every push and uploads the reports ([example run](https://github.com/harish-ravichandra/kube-vuln-triage/actions/runs/40556824269)).
 
 Flags: `--offline` (cached scans, KEV and EPSS only), `--rescan` (ignore the scan cache), `--include-system` (also scan `kube-system`, `kyverno`, `local-path-storage`), `--context`, `--cache-dir`, `--trivy`.
 
@@ -63,11 +63,103 @@ Every image is pinned by tag and digest. clean-app uses the `debug-nonroot` vari
 
 ### Sample `summary.json`
 
-<!-- FILL from the e2e-demo artifact before publishing -->
+From the second `e2e-demo` run (every digest served from cache), trimmed. 177 base image fix items in total; 12 span more than one workload, like this one:
+
+```json
+{
+  "scan": {
+    "unique_digests": 4,
+    "scanned": 0,
+    "cache_hits": 4,
+    "failed": 0
+  },
+  "enrichment": {
+    "kev_catalog_version": "2026.10.26",
+    "kev_count": 1758,
+    "epss_requested": 590,
+    "epss_fetched_batches": 0,
+    "offline": false
+  },
+  "workloads": 4,
+  "counts": {
+    "by_tier": {
+      "P1": 15,
+      "P2": 28,
+      "P3": 138,
+      "P4": 1148,
+      "total": 1329
+    },
+    "by_team": "…",
+    "orphans": {
+      "workloads": [
+        "demo/deployment/legacy-report"
+      ],
+      "workload_count": 1
+    }
+  },
+  "base_image_fix_items": [
+    {
+      "os": "debian 12",
+      "package": "perl-base",
+      "fixed_version": "5.36.0-7+deb12u4",
+      "tier": "P2",
+      "max_severity": "CRITICAL",
+      "cves": [
+        "CVE-2025-15649",
+        "CVE-2026-12087",
+        "CVE-2026-13221",
+        "… 10 more"
+      ],
+      "workloads": [
+        "demo/deployment/orders-worker",
+        "demo/deployment/payments-api"
+      ],
+      "owners": [
+        "orders",
+        "payments"
+      ],
+      "action": "Rebuild on a base where `perl-base` ≥ `5.36.0-7+deb12u4`; affects 2 images, 2 workloads, owners: orders, payments."
+    },
+    "…"
+  ],
+  "eol_images": [
+    {
+      "image": "node:14.21.3-buster-slim@sha256:198142146b4c47193348f6415da769bdb5035c16fcab051c38c256a6b48f2e1c",
+      "os": "debian 10.13",
+      "workloads": [
+        "demo/deployment/legacy-report"
+      ]
+    }
+  ]
+}
+```
 
 ### Top of `reports/teams/payments.md`
 
-<!-- FILL from the e2e-demo artifact before publishing -->
+```markdown
+# Remediation: team `payments`
+
+Generated 2026-10-27T18:08:27+00:00 by `python -m cva run`.
+
+Findings: **850** (P1 15, P2 21, P3 95, P4 719). Fix items: **147**.
+
+## Workloads
+
+| Workload | Container | Image | Exposure | Owner source |
+|---|---|---|---|---|
+| demo/deployment/payments-api | nginx | `nginx:1.25.3@sha256:c7a6ad68be85142c7fe1089e48faa1e7c7166a194caa9180ddea66345876b9d2` | svc/payments-api:NodePort | pod-label |
+
+## P1: fix now (exploited or likely, fixable, exposed)
+
+| # | Tier | Layer | Action | CVEs | KEV | Max EPSS | Severity | Workloads |
+|---|---|---|---|---|---|---|---|---|
+| 1 | P1 | base image | Rebuild on a base where `libfreetype6` ≥ `2.12.1+dfsg-5+deb12u4`; affects 1 image, 1 workload, owners: payments. | CVE-2025-27363 | yes | 0.278 | HIGH | demo/deployment/payments-api |
+| 2 | P1 | base image | Rebuild on a base where `libsystemd0` ≥ `252.23-1~deb12u1`; affects 1 image, 1 workload, owners: payments. | CVE-2023-50387, CVE-2023-50868 |  | 1.000 | HIGH | demo/deployment/payments-api |
+| 3 | P1 | base image | Rebuild on a base where `libudev1` ≥ `252.23-1~deb12u1`; affects 1 image, 1 workload, owners: payments. | CVE-2023-50387, CVE-2023-50868 |  | 1.000 | HIGH | demo/deployment/payments-api |
+| 4 | P1 | base image | Rebuild on a base where `libc-bin` ≥ `2.36-9+deb12u6`; affects 1 image, 1 workload, owners: payments. | CVE-2024-2961 |  | 0.883 | HIGH | demo/deployment/payments-api |
+| 5 | P1 | base image | Rebuild on a base where `libc6` ≥ `2.36-9+deb12u6`; affects 1 image, 1 workload, owners: payments. | CVE-2024-2961 |  | 0.883 | HIGH | demo/deployment/payments-api |
+…
+```
 
 ## Admission control
 
@@ -79,7 +171,33 @@ Three `ClusterPolicy` resources, each with `failureAction: Audit` and a `failure
 
 Each manifest in `demo/bad-pods/` violates exactly one policy. Output of `kubectl apply -n secure -f demo/bad-pods/`:
 
-<!-- FILL from reports/admission.txt in the e2e-demo artifact -->
+```text
+$ kubectl apply -n secure -f demo/bad-pods/01-missing-team-label.yaml
+Error from server: error when creating "demo/bad-pods/01-missing-team-label.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/secure/bad-missing-team-label was blocked due to the following policies 
+
+require-team-label:
+  check-team-label: 'validation error: Pod must have a non-empty `team` label (e.g. team: payments) so its vulnerabilities can be attributed to an owning team. rule check-team-label failed at path /metadata/labels/team/'
+
+$ kubectl apply -n secure -f demo/bad-pods/02-latest-tag.yaml
+Error from server: error when creating "demo/bad-pods/02-latest-tag.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/secure/bad-latest-tag was blocked due to the following policies 
+
+disallow-latest-tag:
+  validate-image-tag: 'validation error: Image tag :latest is not allowed; pin a version (and digest). rule validate-image-tag failed at path /spec/containers/0/image/'
+
+$ kubectl apply -n secure -f demo/bad-pods/03-runs-as-root.yaml
+Warning: would violate PodSecurity "restricted:v1.36": allowPrivilegeEscalation != false (container "app" must set securityContext.allowPrivilegeEscalation=false), runAsNonRoot != true (pod or container "app" must set securityContext.runAsNonRoot=true)
+Error from server: error when creating "demo/bad-pods/03-runs-as-root.yaml": admission webhook "validate.kyverno.svc-fail" denied the request: 
+
+resource Pod/secure/bad-runs-as-root was blocked due to the following policies 
+
+require-non-root:
+  disallow-privilege-escalation: 'validation error: Every container must set securityContext.allowPrivilegeEscalation: false. rule disallow-privilege-escalation failed at path /spec/containers/0/securityContext/allowPrivilegeEscalation/'
+  run-as-non-root: 'validation error: Containers must run as non-root: set securityContext.runAsNonRoot: true on the pod, or on every container. rule run-as-non-root[0] failed at path /spec/securityContext/runAsNonRoot/ rule run-as-non-root[1] failed at path /spec/containers/0/securityContext/runAsNonRoot/'
+```
 
 In `demo` the same policies only audit, so the vulnerable samples run and show up in `kubectl get policyreports -n demo`.
 
@@ -89,8 +207,8 @@ In `demo` the same policies only audit, so the vulnerable samples run and show u
 
 `image-scan.yaml` runs on push and pull request with `permissions: contents: read, security-events: write` only. Trivy runs with `severity: CRITICAL`, `ignore-unfixed: true`, `exit-code: 1`, and `limit-severities-for-sarif: true` (without it, trivy-action drops the severity filter for SARIF output and the gate fires on any fixable finding). SARIF uploads with `if: always()` so results land in the Security tab even when the gate fails.
 
-- Failing run (base `python:3.12.13-slim-bookworm`, fixable CRITICALs in `perl-base`): <!-- FILL run URL -->
-- Passing run (base `python:3.12.14-slim-trixie`): <!-- FILL run URL -->
+- Failing run (base `python:3.12.13-slim-bookworm`, fixable CRITICALs in `perl-base`): [run 40555832058](https://github.com/harish-ravichandra/kube-vuln-triage/actions/runs/40555832058)
+- Passing run (base `python:3.12.14-slim-trixie`): [run 40556827494](https://github.com/harish-ravichandra/kube-vuln-triage/actions/runs/40556827494)
 
 ## Design decisions
 
