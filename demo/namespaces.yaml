@@ -1,0 +1,26 @@
+# demo: Kyverno policies run in Audit here so the deliberately vulnerable
+# samples can run. Ownership comes from pod `team` labels; the namespace itself
+# has no `team` label, otherwise legacy-report would inherit an owner.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+# secure: Kyverno policies run in Enforce here.
+#
+# Pod Security Admission warns and audits against `restricted` but enforces
+# only `baseline`. The built-in PodSecurity plugin runs before admission
+# webhooks, so enforcing `restricted` here would reject root pods before
+# Kyverno's require-non-root rule is evaluated. Kyverno is the enforcement
+# point for non-root; PSA restricted still surfaces a warning on every apply.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secure
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: v1.36
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: v1.36
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: v1.36
