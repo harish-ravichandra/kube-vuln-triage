@@ -1,0 +1,17 @@
+# Violates require-team-label only: no `team` label.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-missing-team-label
+  labels: {app: bad-missing-team-label}
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile: {type: RuntimeDefault}
+  containers:
+    - name: app
+      image: gcr.io/distroless/static-debian12:debug-nonroot@sha256:d5563cc7f2f44313f332e91138cc8c6a158899afeeeab2fce3b0f9ccdb3cf9ee
+      command: ["/busybox/sleep", "infinity"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities: {drop: [ALL]}

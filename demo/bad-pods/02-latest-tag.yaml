@@ -1,0 +1,16 @@
+# Violates disallow-latest-tag only: image uses :latest.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-latest-tag
+  labels: {app: bad-latest-tag, team: platform}
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile: {type: RuntimeDefault}
+  containers:
+    - name: app
+      image: gcr.io/distroless/static-debian12:latest
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities: {drop: [ALL]}

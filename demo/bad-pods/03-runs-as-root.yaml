@@ -1,0 +1,16 @@
+# Violates require-non-root only: no runAsNonRoot, privilege escalation allowed.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-runs-as-root
+  labels: {app: bad-runs-as-root, team: platform}
+spec:
+  securityContext:
+    seccompProfile: {type: RuntimeDefault}
+  containers:
+    - name: app
+      image: gcr.io/distroless/static-debian12:debug-nonroot@sha256:d5563cc7f2f44313f332e91138cc8c6a158899afeeeab2fce3b0f9ccdb3cf9ee
+      command: ["/busybox/sleep", "infinity"]
+      securityContext:
+        allowPrivilegeEscalation: true
+        capabilities: {drop: [ALL]}
